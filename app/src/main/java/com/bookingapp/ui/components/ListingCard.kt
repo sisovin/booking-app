@@ -8,19 +8,32 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import coil.size.Scale
 import com.bookingapp.data.model.Listing
-import com.bookingapp.ui.theme.BookingAppRed
 import com.bookingapp.ui.theme.TextPrimary
 import com.bookingapp.ui.theme.TextSecondary
+import com.bookingapp.ui.theme.ShimmerBase
+import com.bookingapp.ui.theme.ShimmerHighlight
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import com.bookingapp.R
+
+// compose-shimmer imports
+import com.valentinilk.shimmer.shimmer
+import androidx.compose.foundation.background
 
 @Composable
 fun ListingCard(
@@ -28,6 +41,7 @@ fun ListingCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -36,21 +50,48 @@ fun ListingCard(
     ) {
         Column {
             Box(modifier = Modifier.fillMaxWidth()) {
-                AsyncImage(
-                    model = listing.imageUrls.firstOrNull(),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
-                )
-                
+                val imageUrl = listing.imageUrls.firstOrNull().orEmpty()
+                val painter = if (imageUrl.isBlank()) {
+                    painterResource(id = R.drawable.ic_image_placeholder)
+                } else {
+                    rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(context)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .scale(Scale.FILL)
+                            .build()
+                    )
+                }
+
+                val asyncState = (painter as? AsyncImagePainter)?.state
+
+                if (asyncState is AsyncImagePainter.State.Loading) {
+                    // show shimmer placeholder while loading, using compose-shimmer library
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1.4f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Brush.linearGradient(listOf(ShimmerBase, ShimmerHighlight)))
+                            .shimmer()
+                    )
+                } else {
+                    androidx.compose.foundation.Image(
+                        painter = painter,
+                        contentDescription = "Image of ${listing.name}",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1.4f)
+                            .clip(RoundedCornerShape(12.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
                 IconButton(
                     onClick = { /* Toggle favorite */ },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(8.dp)
+                        .padding(4.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Favorite,
@@ -60,7 +101,7 @@ fun ListingCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -92,7 +133,8 @@ fun ListingCard(
             Text(
                 text = listing.location,
                 style = MaterialTheme.typography.bodyLarge,
-                color = TextSecondary
+                color = TextSecondary,
+                modifier = Modifier.padding(top = 2.dp)
             )
 
             Text(
@@ -100,7 +142,7 @@ fun ListingCard(
                 style = MaterialTheme.typography.bodyLarge,
                 color = TextPrimary,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 4.dp)
+                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
             )
         }
     }

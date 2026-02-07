@@ -25,3 +25,7 @@ val Info = Color(0xFF0071EB)
 val GeminiPrimary = Color(0xFF4285F4)
 val GeminiAccent = Color(0xFF34A853)
 val GeminiBackground = Color(0xFFF8F9FA)
+
+// Shimmer defaults (theme-configurable)
+val ShimmerBase = Color(0xFFEEEEEE)
+val ShimmerHighlight = Color(0xFFDDDDDD)

@@ -53,7 +53,6 @@ android {
         includeInApk = true
         includeInBundle = true
     }
-    buildToolsVersion = "35.0.0"
     ndkVersion = "27.1.12297006"
 }
 
@@ -65,13 +64,16 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
 
     // Compose
-    val composeBom = platform("androidx.compose:compose-bom:2024.01.00")
+    val composeBom = platform("androidx.compose:compose-bom:2026.01.01")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
+
+    // Shimmer library
+    implementation("com.valentinilk.shimmer:compose-shimmer:1.0.5")
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.6")
