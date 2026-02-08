@@ -54,7 +54,7 @@ fun ProfileScreen(
                 title = { Text(text = "Profile") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back to Home")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back to Home")
                     }
                 }
             )
@@ -94,12 +94,12 @@ fun ProfileScreen(
 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(onClick = onEditProfile) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit profile")
+                                Icon(Icons.Filled.Edit, contentDescription = "Edit profile")
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(text = "Edit Profile")
                             }
                             TextButton(onClick = onViewBookings) {
-                                Icon(Icons.Default.Book, contentDescription = "My bookings")
+                                Icon(Icons.Filled.Book, contentDescription = "My bookings")
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(text = "My Bookings")
                             }
@@ -142,7 +142,7 @@ fun ProfileScreen(
                 ListItem(
                     headlineContent = { Text(text = "Manage Account") },
                     supportingContent = { Text(text = "Name, email, phone and preferences") },
-                    leadingContent = { Icon(Icons.Default.Person, contentDescription = null) },
+                    leadingContent = { Icon(Icons.Filled.Person, contentDescription = null) },
                     trailingContent = { TextButton(onClick = onEditProfile) { Text("Manage") } },
                     modifier = Modifier.clickable { onEditProfile() }
                 )
@@ -152,7 +152,7 @@ fun ProfileScreen(
                 ListItem(
                     headlineContent = { Text(text = "Payment Methods") },
                     supportingContent = { Text(text = "Add or remove cards, view payment history") },
-                    leadingContent = { Icon(Icons.Default.Payment, contentDescription = null) },
+                    leadingContent = { Icon(Icons.Filled.Payment, contentDescription = null) },
                     trailingContent = { TextButton(onClick = onManagePayment) { Text("Manage") } },
                     modifier = Modifier.clickable { onManagePayment() }
                 )
@@ -199,7 +199,7 @@ fun ProfileScreen(
                 ListItem(
                     headlineContent = { Text(text = "Help & Support") },
                     supportingContent = { Text(text = "FAQ, contact support, report an issue") },
-                    leadingContent = { Icon(Icons.Default.Help, contentDescription = null) },
+                    leadingContent = { Icon(Icons.Filled.Help, contentDescription = null) },
                     modifier = Modifier.clickable { onSupport() }
                 )
             }
@@ -208,7 +208,7 @@ fun ProfileScreen(
                 ListItem(
                     headlineContent = { Text(text = "Terms & Privacy") },
                     supportingContent = { Text(text = "View terms of service and privacy policy") },
-                    leadingContent = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    leadingContent = { Icon(Icons.Filled.Settings, contentDescription = null) },
                     modifier = Modifier.clickable { /* open terms */ }
                 )
             }
@@ -222,7 +222,7 @@ fun ProfileScreen(
                         .padding(bottom = 24.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Icon(Icons.Default.Logout, contentDescription = "Logout")
+                    Icon(Icons.Filled.Logout, contentDescription = "Logout")
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = "Logout", color = MaterialTheme.colorScheme.error)
                 }

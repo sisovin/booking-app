@@ -18,6 +18,10 @@ import com.bookingapp.R
 import com.bookingapp.data.model.Listing
 import com.bookingapp.ui.components.ConversationalSearchBar
 import com.bookingapp.ui.components.ListingCard
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.text.style.TextOverflow
 import com.bookingapp.viewmodel.HomeViewModel
 import com.bookingapp.viewmodel.UiState
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,6 +36,8 @@ import com.bookingapp.ui.components.BottomNavBar
 import com.bookingapp.ui.screens.listing.ListingDetailScreen
 import com.bookingapp.ui.screens.profile.ProfileScreen
 import com.bookingapp.ui.screens.messages.MessagesScreen
+import com.bookingapp.ui.screens.bookings.BookingsScreen
+import com.bookingapp.ui.screens.notifications.NotificationsScreen
 
 @Composable
 fun TopBar(
@@ -107,6 +113,7 @@ fun HomeScreenContent(
     uiState: UiState<List<Listing>>,
     geminiState: UiState<String>,
     onSearch: (String) -> Unit,
+    onQueryChange: (String) -> Unit = {},
     onBellClick: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -119,7 +126,8 @@ fun HomeScreenContent(
 
     Scaffold(
         topBar = {
-            TopBar(onBellClick = onBellClick)
+            // Ensure the bell icon navigates to the Notifications screen by modifying local state here
+            TopBar(onBellClick = { currentScreen = "notifications" })
         },
         bottomBar = {
             BottomNavBar(selectedItemId = currentScreen, onItemSelected = { id ->
@@ -138,6 +146,12 @@ fun HomeScreenContent(
                 }
                 "messages" -> {
                     MessagesScreen(onBack = { currentScreen = "home" })
+                }
+                "bookings" -> {
+                    BookingsScreen(onBack = { currentScreen = "home" })
+                }
+                "notifications" -> {
+                    NotificationsScreen(onBack = { currentScreen = "home" })
                 }
                 else -> {
                     if (selectedListing != null) {
@@ -159,13 +173,41 @@ fun HomeScreenContent(
                                     verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     item {
-                                        ConversationalSearchBar(
-                                            query = searchQuery,
-                                            onQueryChange = { searchQuery = it },
-                                            onSearch = { query ->
-                                                onSearch(query)
+                                        Column {
+                                            ConversationalSearchBar(
+                                             query = searchQuery,
+                                             onQueryChange = { newQuery ->
+                                                 // update local state for immediate UI
+                                                 searchQuery = newQuery
+                                                 // also notify ViewModel for debounced live search
+                                                 onQueryChange(newQuery)
+                                             },
+                                             onSearch = { query ->
+                                                 onSearch(query)
+                                             }
+                                            )
+
+                                            // Quick results row showing top 3 matches as user types
+                                            val top3 = listings.take(3)
+                                            if (searchQuery.isNotBlank() && top3.isNotEmpty()) {
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                LazyRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                    items(top3) { item ->
+                                                        Card(
+                                                            modifier = Modifier
+                                                                .width(240.dp)
+                                                                .clickable { /* navigational action could be wired here */ },
+                                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                                                        ) {
+                                                            Column(modifier = Modifier.padding(8.dp)) {
+                                                                Text(text = item.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                                                Text(text = "${item.location} • $${item.pricePerNight.toInt()}", style = MaterialTheme.typography.bodySmall)
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
-                                        )
+                                        }
                                     }
                                     item {
                                         // Gemini Response Area (if active)
@@ -203,12 +245,20 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val geminiState by viewModel.geminiState.collectAsState()
 
+    // Forward search input to ViewModel for live char-by-char filtering
     HomeScreenContent(
         uiState = uiState,
         geminiState = geminiState,
         onSearch = { query -> viewModel.searchWithGemini(query) },
-        onBellClick = { /* TODO: navigate to notifications */ }
+        onQueryChange = { q -> viewModel.setSearchQuery(q) },
+        onBellClick = {},
     )
+
+    // Provide a composable-level helper to update query as user types
+    // (HomeScreenContent uses local state for query, but we'll lift updates to ViewModel)
+    LaunchedEffect(Unit) {
+        // No-op here; setSearchQuery is invoked from HomeScreenContent via callback wiring below
+    }
 }
 
 // Preview functions

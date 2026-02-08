@@ -41,7 +41,7 @@ fun ConversationalSearchBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.Search,
+                imageVector = Icons.Filled.Search,
                 contentDescription = "Search",
                 tint = Color.Black
             )
@@ -72,7 +72,7 @@ fun ConversationalSearchBar(
             // Filter icon or Gemini sparkle could go here
             IconButton(onClick = { /* Open filters */ }) {
                 Icon(
-                    imageVector = Icons.Default.Search, // Replace with sparkle/filter icon
+                    imageVector = Icons.Filled.Search, // Replace with sparkle/filter icon
                     contentDescription = "Filters",
                     tint = TextSecondary
                 )

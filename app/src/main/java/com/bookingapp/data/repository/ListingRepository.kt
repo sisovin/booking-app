@@ -18,11 +18,78 @@ class ListingRepository @Inject constructor() {
 
     fun searchListings(query: String): Flow<List<Listing>> = flow {
         delay(1000)
-        val filtered = getMockListings().filter { 
-            it.name.contains(query, ignoreCase = true) || 
-            it.location.contains(query, ignoreCase = true) ||
-            it.category.contains(query, ignoreCase = true)
+        val q = query.trim().lowercase()
+
+        // Extract numeric tokens (supports commas, decimals) and analyze whether they form a range
+        val numberRegex = Regex("\\d+[.,]?\\d*")
+        val numberMatches = numberRegex.findAll(q).map { it.value.replace(",", ".") }.toList()
+
+        var priceMin: Double? = null
+        var priceMax: Double? = null
+        var priceSingle: Double? = null
+
+        val hasRangeKeyword = q.contains("-") || q.contains(" to ") || q.contains(" to") || q.contains("to ") || q.contains("between")
+
+        if (numberMatches.size >= 2 && hasRangeKeyword) {
+            // Treat as explicit range with first two numbers
+            val n1 = numberMatches[0].toDoubleOrNull()
+            val n2 = numberMatches[1].toDoubleOrNull()
+            if (n1 != null && n2 != null) {
+                priceMin = minOf(n1, n2)
+                priceMax = maxOf(n1, n2)
+            }
+        } else if (numberMatches.size >= 1) {
+            // Single numeric token: determine mode from context
+            priceSingle = numberMatches[0].toDoubleOrNull()
+            // If there are multiple numeric tokens but no explicit range keyword, prefer the first as single value
         }
+
+        // Also detect explicit comparators like "under 200", "<200", ">=150"
+        val lessKeywords = listOf("under", "below", "<=", "< ")
+        val greaterKeywords = listOf("over", "above", ">=", "> ")
+
+        val requestedCategoriesKeywords = listOf("hotel", "guesthouse", "villa", "apartment", "cabin", "beachfront", "pool", "house")
+        val requestedCategories = requestedCategoriesKeywords.filter { q.contains(it) }
+
+        val filtered = getMockListings().filter { listing ->
+            val textMatch = listing.name.contains(q, ignoreCase = true) ||
+                    listing.location.contains(q, ignoreCase = true) ||
+                    listing.category.contains(q, ignoreCase = true)
+
+            val priceMatch = when {
+                priceMin != null && priceMax != null -> listing.pricePerNight in priceMin..priceMax
+                priceSingle != null -> {
+                    val v = priceSingle
+                    when {
+                        lessKeywords.any { q.contains(it) } -> listing.pricePerNight <= v
+                        greaterKeywords.any { q.contains(it) } -> listing.pricePerNight >= v
+                        else -> {
+                            // equal_or_close: within +/-20%
+                            val lower = v * 0.8
+                            val upper = v * 1.2
+                            listing.pricePerNight in lower..upper || listing.pricePerNight == v
+                        }
+                    }
+                }
+                else -> true
+            }
+
+            val categoryMatch = if (requestedCategories.isNotEmpty()) {
+                requestedCategories.any { rc ->
+                    listing.category.contains(rc, ignoreCase = true) || listing.name.contains(rc, ignoreCase = true)
+                }
+            } else {
+                true
+            }
+
+            val hasStructuredFilters = (priceMin != null && priceMax != null) || (priceSingle != null) || requestedCategories.isNotEmpty()
+            if (hasStructuredFilters) {
+                priceMatch && categoryMatch
+            } else {
+                textMatch
+            }
+        }
+
         emit(filtered)
     }
 

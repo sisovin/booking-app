@@ -95,7 +95,7 @@ fun ListingCard(
                         .padding(4.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Favorite,
+                        imageVector = Icons.Filled.Favorite,
                         contentDescription = "Favorite",
                         tint = Color.White.copy(alpha = 0.8f)
                     )
@@ -122,7 +122,7 @@ fun ListingCard(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Star,
+                            imageVector = Icons.Filled.Star,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
                             tint = TextPrimary
