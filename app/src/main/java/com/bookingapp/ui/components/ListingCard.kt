@@ -39,6 +39,7 @@ import androidx.compose.foundation.background
 fun ListingCard(
     listing: Listing,
     onClick: () -> Unit,
+    onViewClick: () -> Unit = onClick,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -48,7 +49,7 @@ fun ListingCard(
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        Column {
+        Column(modifier = Modifier.padding(8.dp)) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 val imageUrl = listing.imageUrls.firstOrNull().orEmpty()
                 val painter = if (imageUrl.isBlank()) {
@@ -101,49 +102,68 @@ fun ListingCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = listing.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = TextPrimary
-                    )
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = listing.rating.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary
+                        text = listing.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = TextPrimary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = listing.rating.toString(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextPrimary
+                        )
+                    }
+
+                    Text(
+                        text = listing.location,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TextSecondary,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+
+                    Text(
+                        text = "$${listing.pricePerNight.toInt()} / night",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
                     )
                 }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Green "View" button
+                Button(
+                    onClick = onViewClick,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32), contentColor = Color.White),
+                    modifier = Modifier
+                        .height(40.dp)
+                        .padding(start = 8.dp)
+                ) {
+                    Text(text = "View")
+                }
             }
-
-            Text(
-                text = listing.location,
-                style = MaterialTheme.typography.bodyLarge,
-                color = TextSecondary,
-                modifier = Modifier.padding(top = 2.dp)
-            )
-
-            Text(
-                text = "$${listing.pricePerNight.toInt()} / night",
-                style = MaterialTheme.typography.bodyLarge,
-                color = TextPrimary,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
-            )
         }
     }
 }
@@ -165,7 +185,8 @@ fun ListingCardPreview() {
                 hostName = "Wayan",
                 description = "Luxury villa with private pool and ocean view."
             ),
-            onClick = {}
+            onClick = {},
+            onViewClick = {}
         )
     }
 }
