@@ -1,6 +1,7 @@
 package com.bookingapp.di
 
 import com.google.ai.client.generativeai.GenerativeModel
+import com.bookingapp.BuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,10 +15,11 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideGenerativeModel(): GenerativeModel {
-        // In a real app, the API key would be fetched from local.properties or BuildConfig
+        // Use GEMINI_API_KEY from BuildConfig which reads the value from local.properties at build time
+        val apiKey = if (BuildConfig.GEMINI_API_KEY.isNotBlank()) BuildConfig.GEMINI_API_KEY else "YOUR_API_KEY_HERE"
         return GenerativeModel(
             modelName = "gemini-pro",
-            apiKey = "YOUR_API_KEY_HERE"
+            apiKey = apiKey
         )
     }
 }

@@ -31,6 +31,7 @@ import com.bookingapp.ui.theme.BookingAppTheme
 import com.bookingapp.ui.components.BottomNavBar
 import com.bookingapp.ui.screens.listing.ListingDetailScreen
 import com.bookingapp.ui.screens.profile.ProfileScreen
+import com.bookingapp.ui.screens.messages.MessagesScreen
 
 @Composable
 fun TopBar(
@@ -134,6 +135,9 @@ fun HomeScreenContent(
             when (currentScreen) {
                 "profile" -> {
                     ProfileScreen(onBack = { currentScreen = "home" })
+                }
+                "messages" -> {
+                    MessagesScreen(onBack = { currentScreen = "home" })
                 }
                 else -> {
                     if (selectedListing != null) {

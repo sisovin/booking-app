@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
@@ -5,6 +7,12 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+// Read GEMINI_API_KEY from the root local.properties (if present) and make it available to the app via BuildConfig
+val localPropsFile = rootProject.file("local.properties")
+val geminiApiKey: String = if (localPropsFile.exists()) {
+    Properties().apply { load(localPropsFile.inputStream()) }.getProperty("GEMINI_API_KEY") ?: ""
+} else ""
 
 android {
     namespace = "com.bookingapp"
@@ -21,6 +29,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // Expose the GEMINI API key to code via BuildConfig.GEMINI_API_KEY (empty string when missing)
+        buildConfigField("String", "GEMINI_API_KEY", "\"${geminiApiKey}\"")
     }
 
     buildTypes {
