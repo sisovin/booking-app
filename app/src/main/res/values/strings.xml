@@ -8,4 +8,6 @@
     <string name="nav_bookings">Bookings</string>
     <string name="nav_messages">Messages</string>
     <string name="nav_profile">Profile</string>
+
+    <string name="profile_image_description">Profile image</string>
 </resources>

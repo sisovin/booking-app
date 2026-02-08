@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.bookingapp.ui.theme.BookingAppTheme
 import com.bookingapp.ui.components.BottomNavBar
 import com.bookingapp.ui.screens.listing.ListingDetailScreen
+import com.bookingapp.ui.screens.profile.ProfileScreen
 
 @Composable
 fun TopBar(
@@ -108,7 +109,9 @@ fun HomeScreenContent(
     onBellClick: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedNav by remember { mutableStateOf("home") }
+
+    // Simple screen selection: "home" or "profile"
+    var currentScreen by remember { mutableStateOf("home") }
 
     // Selected listing state for showing detail overlay
     var selectedListing by remember { mutableStateOf<Listing?>(null) }
@@ -118,9 +121,8 @@ fun HomeScreenContent(
             TopBar(onBellClick = onBellClick)
         },
         bottomBar = {
-            BottomNavBar(selectedItemId = selectedNav, onItemSelected = { id ->
-                selectedNav = id
-                // TODO: wire navigation actions based on id
+            BottomNavBar(selectedItemId = currentScreen, onItemSelected = { id ->
+                currentScreen = id
             })
         }
     ) { paddingValues ->
@@ -129,54 +131,61 @@ fun HomeScreenContent(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (selectedListing != null) {
-                // Show detail screen overlay
-                ListingDetailScreen(
-                    listing = selectedListing!!,
-                    onBack = { selectedListing = null },
-                    onBookNow = { /* TODO: booking flow */ }
-                )
-            } else {
-                when (uiState) {
-                    is UiState.Loading -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                    }
-                    is UiState.Success -> {
-                        val listings = uiState.data
-                        LazyColumn(
-                            contentPadding = PaddingValues(4.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            item {
-                                ConversationalSearchBar(
-                                    query = searchQuery,
-                                    onQueryChange = { searchQuery = it },
-                                    onSearch = { query ->
-                                        onSearch(query)
+            when (currentScreen) {
+                "profile" -> {
+                    ProfileScreen(onBack = { currentScreen = "home" })
+                }
+                else -> {
+                    if (selectedListing != null) {
+                        // Show detail screen overlay
+                        ListingDetailScreen(
+                            listing = selectedListing!!,
+                            onBack = { selectedListing = null },
+                            onBookNow = { /* TODO: booking flow */ }
+                        )
+                    } else {
+                        when (uiState) {
+                            is UiState.Loading -> {
+                                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                            }
+                            is UiState.Success -> {
+                                val listings = uiState.data
+                                LazyColumn(
+                                    contentPadding = PaddingValues(4.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    item {
+                                        ConversationalSearchBar(
+                                            query = searchQuery,
+                                            onQueryChange = { searchQuery = it },
+                                            onSearch = { query ->
+                                                onSearch(query)
+                                            }
+                                        )
                                     }
+                                    item {
+                                        // Gemini Response Area (if active)
+                                        GeminiResponseSection(geminiState)
+                                    }
+                                    items(listings) { listing ->
+                                        ListingCard(
+                                            listing = listing,
+                                            onClick = { /* Navigate to detail */ },
+                                            onViewClick = { selectedListing = listing }
+                                        )
+                                    }
+                                }
+                            }
+                            is UiState.Error -> {
+                                Text(
+                                    text = (uiState as UiState.Error).message,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.align(Alignment.Center)
                                 )
                             }
-                            item {
-                                // Gemini Response Area (if active)
-                                GeminiResponseSection(geminiState)
-                            }
-                            items(listings) { listing ->
-                                ListingCard(
-                                    listing = listing,
-                                    onClick = { /* Navigate to detail */ },
-                                    onViewClick = { selectedListing = listing }
-                                )
-                            }
+                            else -> {}
                         }
                     }
-                    is UiState.Error -> {
-                        Text(
-                            text = (uiState as UiState.Error).message,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-                    else -> {}
                 }
             }
         }
